@@ -1,0 +1,70 @@
+// push constant 7
+@7
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+// push constant 8
+@8
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+// gt
+@SP
+M=M-1
+@SP
+A=M
+D=M
+A=A-1
+D=M-D
+@VmGeneratedLabel.truecmpgt0
+D;JGT
+D=0
+@VmGeneratedLabel.endcmpgt1
+0,JMP
+(VmGeneratedLabel.truecmpgt0)
+D=-1
+(VmGeneratedLabel.endcmpgt1)
+@SP
+A=M-1
+M=D
+// push constant 8
+@8
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+// push constant 7
+@7
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+// gt
+@SP
+M=M-1
+@SP
+A=M
+D=M
+A=A-1
+D=M-D
+@VmGeneratedLabel.truecmpgt2
+D;JGT
+D=0
+@VmGeneratedLabel.endcmpgt3
+0,JMP
+(VmGeneratedLabel.truecmpgt2)
+D=-1
+(VmGeneratedLabel.endcmpgt3)
+@SP
+A=M-1
+M=D

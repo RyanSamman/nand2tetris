@@ -1,0 +1,70 @@
+// push constant 8
+@8
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+// push constant 8
+@8
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+// eq
+@SP
+M=M-1
+@SP
+A=M
+D=M
+A=A-1
+D=M-D
+@VmGeneratedLabel.truecmpeq0
+D;JEQ
+D=0
+@VmGeneratedLabel.endcmpeq1
+0,JMP
+(VmGeneratedLabel.truecmpeq0)
+D=-1
+(VmGeneratedLabel.endcmpeq1)
+@SP
+A=M-1
+M=D
+// push constant 7
+@7
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+// push constant 8
+@8
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+// eq
+@SP
+M=M-1
+@SP
+A=M
+D=M
+A=A-1
+D=M-D
+@VmGeneratedLabel.truecmpeq2
+D;JEQ
+D=0
+@VmGeneratedLabel.endcmpeq3
+0,JMP
+(VmGeneratedLabel.truecmpeq2)
+D=-1
+(VmGeneratedLabel.endcmpeq3)
+@SP
+A=M-1
+M=D
