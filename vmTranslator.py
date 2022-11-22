@@ -1,4 +1,6 @@
 
+DEBUG = True
+
 SEGMENT_TABLE = {  
     "local"    : 1,
     "argument" : 2,
@@ -15,9 +17,11 @@ def getSegment(cmd: str) -> int:
 
 
 class VMState:
-    DEBUG=True
+    DEBUG=DEBUG
+    currentCommand = ""
     lineNumber = 0
     labelsGenerated = 0
+    labelMap: dict[str, int] = {}
 
     def generateLabel(self, s=""):
         i = self.labelsGenerated
@@ -159,7 +163,6 @@ def writeArithmetic(cmd: str, state: VMState) -> list[str]:
                 # M[A] = !M[M[SP]-1]
                 "M=!M" if cmd == "not" else "M=-M",
             ]
-
         case "eq" | "gt" | "lt":
                 # TODO
                 # "eq": "M=M+D",
@@ -209,12 +212,10 @@ def writeArithmetic(cmd: str, state: VMState) -> list[str]:
         case _:
             raise Exception("Invalid Command for Arithmetic: " + cmd)
 
-def convertVmStatementToAsm(vmStatement: str, state: VMState) -> list[str]:
-    line = vmStatement.strip()
-    symbols = line.split(" ")
+def convertVmStatementToAsm(symbols: list[str], state: VMState) -> list[str]:
 
     cmd = symbols[0]
-    asm = [f"// {vmStatement}"] if state.DEBUG else [] 
+    asm = [f"// {state.currentCommand}"] if state.DEBUG else [] 
 
     match cmd:
         case "add" | "sub" | "neg" | "eq" | "gt" | "lt" | "and" | "or" | "not":
@@ -223,36 +224,95 @@ def convertVmStatementToAsm(vmStatement: str, state: VMState) -> list[str]:
             segment = symbols[1]
             index = int(symbols[2])
             asm += writePushOrPop(cmd, segment, index, state)
+        case "label":
+            labelName = symbols[1]
+            asm += [f"({labelName})"]
+        case "goto":
+            gotoLabel = symbols[1]
+            return [
+                f"@{gotoLabel}",
+                "0;JEQ",
+            ]
+        case "if-goto":
+            gotoLabel = symbols[1]
+            asm += [
+                "@SP",
+                "M=M-1",
+                "A=M",
+                "D=M",
+                f"@{symbols[1]}",
+                "D;JNE",
+            ]
+        case "call":
+            pass
+        case "function":
+            pass
         case _:
             raise Exception(f"Line {state.lineNumber} - Invalid Command: {cmd}")
 
     return asm
 
+def convertVmFunctionToAsm(vmStatements: list[str]) -> list[str]:
+    asmCommands = []
+
+    return asmCommands
+
 def convertVmToAsm(vmStatements: list[str]) -> list[str]:
     state = VMState()
     asmCommands = []
 
-    for lineNumber, line in enumerate(vmStatements):
+    readingFunction = False
+    functionLine = 0
+    fnCommands = []
 
+    for lineNumber, line in enumerate(vmStatements):
         state.lineNumber = lineNumber
         line = line.strip()
         if line.startswith("//") or line == "":
             continue;
+        
+        state.currentCommand = line
+        symbols = line.split(" ")
 
-        asmCommands += convertVmStatementToAsm(line, state)
+        if symbols[0] == "function":
+            readingFunction = True
+
+        if readingFunction:
+            fnCommands
+
+            if symbols[0] == "return":
+                # asmCommands += convertToFunction(fnCommands)
+                readingFunction = False
+        else:
+            asmCommands += convertVmStatementToAsm(symbols, state)
+
+    if readingFunction is True:
+        raise Exception(f"Invalid Function on line {functionLine}!")
 
     return asmCommands
-    
+
+def addLineComments(asmCommands: list[str]):
+    code = []
+    i = 0
+    for c in asmCommands:
+        if not c.strip().startswith(r"//") and not c.startswith("("):
+            code.append(f"{c:15s} // {i}")
+            i+=1
+        else:
+            code.append(c)
+    return code
+
 
 def main(fIn: str, fOut: str):
     with open(fIn, "r") as inputFile, open(fOut, "w") as outputFile:
         asmCommands = convertVmToAsm(list(inputFile))
-        # asmCommands = convertStrToSymbols(asmCommands)
+        if DEBUG:
+            asmCommands = addLineComments(asmCommands)
         outputFile.write("\n".join(asmCommands))
 
 if __name__ == "__main__":
 
-    files = [
+    files_p7 = [
         r"projects\07\StackArithmetic\SimpleAdd\SimpleAdd",
         r"projects\07\StackArithmetic\SimpleAdd\SimpleSub",
         r"projects\07\StackArithmetic\SimpleAdd\SimpleAnd",
@@ -268,5 +328,12 @@ if __name__ == "__main__":
         r"projects\07\MemoryAccess\PointerTest\PointerTest",
     ]
 
-    for file in files:
+    files_p8 = [
+        r"projects\08\ProgramFlow\BasicLoop\BasicLoop",
+        r"projects\08\ProgramFlow\FibonacciSeries\FibonacciSeries",
+        r"projects\08\FunctionCalls\SimpleFunction\SimpleFunction",
+        # r"",
+    ]
+
+    for file in files_p8:
         main(f"{file}.vm", f"{file}.asm")
